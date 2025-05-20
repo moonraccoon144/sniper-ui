@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import * as ethers from 'ethers';
+import { BrowserProvider, Contract, parseEther } from 'ethers';
 
 export default function SniperUI() {
   const [token, setToken] = useState('');
@@ -19,35 +18,35 @@ export default function SniperUI() {
     'function snipe() external',
   ];
 
-  const contractAddress = '0xYourContractAddress'; // <-- replace with your deployed contract
+  const contractAddress = '0xYourContractAddress'; // Replace this with your actual contract
 
   const connect = async () => {
-  try {
-    if (!window.ethereum) {
-      alert('No wallet detected. Please install Rabby or MetaMask.');
-      return;
+    try {
+      if (!window.ethereum) {
+        alert('No wallet detected. Please install Rabby or MetaMask.');
+        return;
+      }
+
+      const provider = new BrowserProvider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      const signer = await provider.getSigner();
+      const c = new Contract(contractAddress, abi, signer);
+      const userAddress = await signer.getAddress();
+
+      setContract(c);
+      setStatus(`Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`);
+    } catch (err) {
+      console.error('Connection error:', err);
+      setStatus('Failed to connect wallet.');
     }
+  };
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-    await provider.send('eth_requestAccounts', []); // Requests wallet connection
-
-    const signer = provider.getSigner();
-    const userAddress = await signer.getAddress();
-    const c = new ethers.Contract(contractAddress, abi, signer);
-
-    setContract(c);
-    setStatus(`Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`);
-  } catch (err) {
-    console.error('Connection error:', err);
-    setStatus('Failed to connect wallet.');
-  }
-};
   const updateSettings = async () => {
     try {
       setStatus('Setting parameters...');
       await contract.setToken(token);
       await contract.setSlippage(Number(slippage));
-      await contract.setMinLiquidity(ethers.utils.parseEther(minLiquidity));
+      await contract.setMinLiquidity(parseEther(minLiquidity));
       if (block) await contract.setSnipeBlock(Number(block));
       setStatus('Settings updated');
     } catch (err) {
@@ -58,7 +57,7 @@ export default function SniperUI() {
   const simulate = async () => {
     try {
       setStatus('Simulating honeypot...');
-      const result = await contract.simulateHoneypot(ethers.utils.parseEther('0.01'));
+      const result = await contract.simulateHoneypot(parseEther('0.01'));
       setStatus(result ? 'Safe' : 'Honeypot!');
     } catch (err) {
       setStatus('Error: ' + err.message);
