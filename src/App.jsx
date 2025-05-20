@@ -18,7 +18,7 @@ export default function SniperUI() {
     'function snipe() external',
   ];
 
-  const contractAddress = '0x7b1CCc2d7a96c45E07A09A18Bdcb8556E16482a4'; // Replace this with your actual contract
+  const contractAddress = '0x3D612658C137cCFeCd0E23F4B829594B77357a60'; // Replace this with your actual contract
 
   const connect = async () => {
     try {
