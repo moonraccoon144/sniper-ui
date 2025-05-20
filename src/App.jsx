@@ -22,14 +22,25 @@ export default function SniperUI() {
   const contractAddress = '0xYourContractAddress'; // <-- replace with your deployed contract
 
   const connect = async () => {
-    if (!window.ethereum) return alert('Install Rabby Wallet');
+  try {
+    if (typeof window.ethereum === 'undefined') {
+      alert('No wallet detected. Please install Rabby or MetaMask.');
+      return;
+    }
+
+    const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const c = new ethers.Contract(contractAddress, abi, signer);
-    setContract(c);
-    setStatus('Connected');
-  };
 
+    setContract(c);
+    setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+  } catch (err) {
+    console.error('Wallet connection error:', err);
+    setStatus('Failed to connect wallet.');
+  }
+};
   const updateSettings = async () => {
     try {
       setStatus('Setting parameters...');
