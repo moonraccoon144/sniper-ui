@@ -23,21 +23,22 @@ export default function SniperUI() {
 
   const connect = async () => {
   try {
-    if (typeof window.ethereum === 'undefined') {
+    if (!window.ethereum) {
       alert('No wallet detected. Please install Rabby or MetaMask.');
       return;
     }
 
-    const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+    await provider.send('eth_requestAccounts', []); // Requests wallet connection
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
+    const userAddress = await signer.getAddress();
     const c = new ethers.Contract(contractAddress, abi, signer);
 
     setContract(c);
-    setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+    setStatus(`Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`);
   } catch (err) {
-    console.error('Wallet connection error:', err);
+    console.error('Connection error:', err);
     setStatus('Failed to connect wallet.');
   }
 };
